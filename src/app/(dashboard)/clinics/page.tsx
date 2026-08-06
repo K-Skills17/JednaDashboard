@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { db } from '@/lib/db';
 import { clinics, clinicModules, contacts, messages, cadenceEnrollments } from '@/lib/schema';
 import { eq, count, and } from 'drizzle-orm';
