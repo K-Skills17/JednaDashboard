@@ -1,11 +1,9 @@
-'use server' ;
-
 import { redirect } from 'next/navigation';
 import { db } from '@/lib/db';
 import { clinics, clinicModules } from '@/lib/schema';
 import { NewClinicForm } from '@/components/NewClinicForm';
 
-export async function createClinic(formData: FormData) {
+async function createClinic(formData: FormData) {
   'use server';
 
   const name              = formData.get('name') as string;
