@@ -4,7 +4,7 @@ import { verifySession, COOKIE_NAME } from '@/lib/auth';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith('/login')) return NextResponse.next();
+  if (pathname.startsWith('/login') || pathname.startsWith('/api/auth')) return NextResponse.next();
 
   const token = request.cookies.get(COOKIE_NAME)?.value;
   const valid = token ? await verifySession(token) : false;
