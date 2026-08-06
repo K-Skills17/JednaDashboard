@@ -75,11 +75,19 @@ export default async function ClinicPage({ params }: { params: Promise<{ id: str
           <h1 className="text-2xl font-semibold text-slate-900">{clinic.name}</h1>
           <p className="text-slate-400 text-sm mt-0.5 font-mono">{clinic.inboundNumber} · {clinic.timezone}</p>
         </div>
-        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-          clinic.status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-amber-50 text-amber-700 ring-1 ring-amber-200'
-        }`}>
-          {clinic.status}
-        </span>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/clinics/${id}/edit`}
+            className="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 text-xs font-medium transition-colors"
+          >
+            Edit
+          </Link>
+          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+            clinic.status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-amber-50 text-amber-700 ring-1 ring-amber-200'
+          }`}>
+            {clinic.status}
+          </span>
+        </div>
       </div>
 
       {/* Stats */}
