@@ -29,27 +29,43 @@ async function updateClinic(formData: FormData) {
 
   await db.update(clinics).set({ name, timezone, ownerNotifyNumber }).where(eq(clinics.id, id));
 
-  const stlFirst   = formData.get('stl_first_message') as string | null;
-  const stlOwner   = formData.get('stl_owner_template') as string | null;
-  const mcTextback = formData.get('mc_textback_template') as string | null;
-  const mcOwner    = formData.get('mc_owner_template') as string | null;
+  const stlFirst       = formData.get('stl_first_message') as string | null;
+  const stlOwner       = formData.get('stl_owner_template') as string | null;
+  const stlBookingLink = formData.get('stl_booking_link') as string | null;
+  const mcTextback     = formData.get('mc_textback_template') as string | null;
+  const mcOwner        = formData.get('mc_owner_template') as string | null;
+  const mcBookingLink  = formData.get('mc_booking_link') as string | null;
 
   const modules = await db.select().from(clinicModules).where(eq(clinicModules.clinicId, id));
 
   for (const mod of modules) {
     const existing = (mod.config ?? {}) as Record<string, unknown>;
 
-    if (mod.moduleKey === 'speed_to_lead' && stlFirst && stlOwner) {
+    if (mod.moduleKey === 'speed_to_lead') {
       await db
         .update(clinicModules)
-        .set({ config: { ...existing, first_message_template: stlFirst, owner_template: stlOwner } })
+        .set({
+          config: {
+            ...existing,
+            ...(stlFirst       ? { first_message_template: stlFirst }   : {}),
+            ...(stlOwner       ? { owner_template: stlOwner }           : {}),
+            ...(stlBookingLink ? { booking_link: stlBookingLink }       : {}),
+          },
+        })
         .where(eq(clinicModules.id, mod.id));
     }
 
-    if (mod.moduleKey === 'missed_call' && mcTextback && mcOwner) {
+    if (mod.moduleKey === 'missed_call') {
       await db
         .update(clinicModules)
-        .set({ config: { ...existing, textback_template: mcTextback, owner_template: mcOwner } })
+        .set({
+          config: {
+            ...existing,
+            ...(mcTextback    ? { textback_template: mcTextback }       : {}),
+            ...(mcOwner       ? { owner_template: mcOwner }             : {}),
+            ...(mcBookingLink ? { booking_link: mcBookingLink }         : {}),
+          },
+        })
         .where(eq(clinicModules.id, mod.id));
     }
   }
@@ -130,7 +146,18 @@ export default async function EditClinicPage({ params }: { params: Promise<{ id:
         {stl && (
           <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
             <h2 className="text-sm font-semibold text-slate-700">Speed-to-lead messages</h2>
-            <p className="text-xs text-slate-400">Use <code className="bg-slate-100 px-1 rounded">{'{name}'}</code>, <code className="bg-slate-100 px-1 rounded">{'{clinic_name}'}</code>, <code className="bg-slate-100 px-1 rounded">{'{phone}'}</code>, <code className="bg-slate-100 px-1 rounded">{'{source}'}</code> as variables.</p>
+            <p className="text-xs text-slate-400">Variables: <code className="bg-slate-100 px-1 rounded">{'{name}'}</code>, <code className="bg-slate-100 px-1 rounded">{'{clinic_name}'}</code>, <code className="bg-slate-100 px-1 rounded">{'{phone}'}</code>, <code className="bg-slate-100 px-1 rounded">{'{source}'}</code>, <code className="bg-slate-100 px-1 rounded">{'{booking_link}'}</code></p>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Booking link (Calendly, etc.)</label>
+              <input
+                name="stl_booking_link"
+                defaultValue={stlConfig.booking_link ?? ''}
+                placeholder="https://calendly.com/yourlink"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="text-xs text-slate-400 mt-1">Used in follow-up messages as <code className="bg-slate-100 px-1 rounded">{'{booking_link}'}</code>. Leave blank to show "reply here to book".</p>
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">First-touch message (sent instantly)</label>
@@ -158,7 +185,17 @@ export default async function EditClinicPage({ params }: { params: Promise<{ id:
         {mc && (
           <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
             <h2 className="text-sm font-semibold text-slate-700">Missed-call messages</h2>
-            <p className="text-xs text-slate-400">Use <code className="bg-slate-100 px-1 rounded">{'{clinic_name}'}</code>, <code className="bg-slate-100 px-1 rounded">{'{caller}'}</code>, <code className="bg-slate-100 px-1 rounded">{'{status}'}</code> as variables.</p>
+            <p className="text-xs text-slate-400">Variables: <code className="bg-slate-100 px-1 rounded">{'{clinic_name}'}</code>, <code className="bg-slate-100 px-1 rounded">{'{name}'}</code>, <code className="bg-slate-100 px-1 rounded">{'{caller}'}</code>, <code className="bg-slate-100 px-1 rounded">{'{booking_link}'}</code></p>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Booking link (Calendly, etc.)</label>
+              <input
+                name="mc_booking_link"
+                defaultValue={mcConfig.booking_link ?? ''}
+                placeholder="https://calendly.com/yourlink"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Text-back message (sent on missed call)</label>
